@@ -65,44 +65,52 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
-
-    #output$distPlot <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        #x    <- faithful[, 2]
-        #bins <- seq(min(x), max(x), length.out = input$bins + 1)
-
-        # draw the histogram with the specified number of bins
-        #hist(x, breaks = bins, col = 'darkgray', border = 'white')
-        
-    output$contents <- renderTable({
-            
-            # input$file1 will be NULL initially. After the user selects
-            # and uploads a file, head of that data file by default,
-            # or all rows if selected, will be shown.
+    
+    dataInput <- reactive({
         req(input$file1)
         
-        # when reading semicolon separated files,
-        # having a comma separator causes `read.csv` to error
-        tryCatch(
-            {
-                df <- read.csv(input$file1$datapath,
-                               header = input$header,
-                               sep = input$sep,
-                               quote = input$quote)
-            },
-            error = function(e) {
-                # return a safeError if a parsing error occurs
-                stop(safeError(e))
-            }
-        )
+        df <- read.csv(input$file1$datapath,
+                       header = input$header,
+                       sep = input$sep,
+                       quote = input$quote)
+        return(df)
+    })
+    
+    # output$distPlot <- renderPlot({
+    #     # generate bins based on input$bins from ui.R
+    #     x    <- faithful[, 2]
+    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    #     print(bins)
+    #     # draw the histogram with the specified number of bins
+    #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
+    # })
+    # 
+    
+    output$distPlot <- renderPlot({
+        plot(dataInput()$x,dataInput()$y)
+    })
+    
+    output$lmtPlot <- renderPlot({
+        plot(dataInput()$x,dataInput()$y)
+    })
+    
+    
+    output$contents <- renderTable({
+        
+        # input$file1 will be NULL initially. After the user selects
+        # and uploads a file, head of that data file by default,
+        # or all rows if selected, will be shown.
+        
         
         if(input$disp == "head") {
-            return(head(df))
+            return(head(dataInput()))
         }
         else {
-            return(df)
+            return(dataInput())
         }
+        
     })
+    
 }
 
 # Run the application 
