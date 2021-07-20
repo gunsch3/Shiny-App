@@ -11,14 +11,14 @@ library(shiny)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
-
+    
     # Application title
     titlePanel("Linear Modeling"),
-
+    
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
-           
+            
             # Input: Select a file ----
             fileInput("file1", "Choose CSV File",
                       multiple = FALSE,
@@ -49,16 +49,17 @@ ui <- fluidPage(
             radioButtons("disp", "Display",
                          choices = c(Head = "head",
                                      All = "all"),
-                         selected = "head")
-    
+                         selected = "head"),
+            actionButton("go", "Go")
+            
         ),
-
+        
         # Show a plot of the generated distribution
         mainPanel(
-           plotOutput("distPlot"),
-           plotOutput("LMPlot"),
-           # Output: Data file ----
-           tableOutput("contents")
+            plotOutput("distPlot"),
+            plotOutput("LMPlot"),
+            # Output: Data file ----
+            tableOutput("contents")
         )
     )
 )
@@ -75,32 +76,21 @@ server <- function(input, output) {
                        quote = input$quote)
         return(df)
     })
+line <- eventReactive(input$go, {lm(dataInput()$y ~ dataInput()$x)})
     
-    # output$distPlot <- renderPlot({
-    #     # generate bins based on input$bins from ui.R
-    #     x    <- faithful[, 2]
-    #     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-    #     print(bins)
-    #     # draw the histogram with the specified number of bins
-    #     hist(x, breaks = bins, col = 'darkgray', border = 'white')
-    # })
-    # 
-    
+    #original scatter
     output$distPlot <- renderPlot({
-        plot(dataInput()$x,dataInput()$y)
+        plot(dataInput()$x, dataInput()$y)
     })
     
-    output$lmtPlot <- renderPlot({
-        plot(dataInput()$x,dataInput()$y)
+    #add linear model graph
+    output$LMPlot <- renderPlot({
+        plot(dataInput()$x, dataInput()$y)
+        abline(line())
     })
     
     
     output$contents <- renderTable({
-        
-        # input$file1 will be NULL initially. After the user selects
-        # and uploads a file, head of that data file by default,
-        # or all rows if selected, will be shown.
-        
         
         if(input$disp == "head") {
             return(head(dataInput()))
