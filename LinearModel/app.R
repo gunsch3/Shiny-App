@@ -50,7 +50,12 @@ ui <- fluidPage(
                          choices = c(Head = "head",
                                      All = "all"),
                          selected = "head"),
-            actionButton("go", "Go")
+            actionButton("go", "Go"),
+            
+            htmlOutput("RSquared"),
+            htmlOutput("Coefficient"),
+            htmlOutput("Intercept"),
+            htmlOutput("Slope")
             
         ),
         
@@ -76,6 +81,7 @@ server <- function(input, output) {
                        quote = input$quote)
         return(df)
     })
+
 line <- eventReactive(input$go, {lm(dataInput()$y ~ dataInput()$x)})
     
     #original scatter
@@ -89,6 +95,24 @@ line <- eventReactive(input$go, {lm(dataInput()$y ~ dataInput()$x)})
         abline(line())
     })
     
+    #Output LM values
+    output$RSquared <- renderUI({
+        str1 <- paste("R", tags$sup(2),"-", sep = "")
+        str2 <- paste(format(round(summary(line())$r.squared, 3)))
+        HTML(paste(str1, str2))
+    })
+    
+    output$Slope <- renderUI({
+        str1 <- paste("Slope -")
+        str2 <- paste(format(round(summary(line())$coefficients[2], 3)))
+        HTML(paste(str1, str2))
+    })
+    
+    output$Intercept <- renderUI({
+        str1 <- paste("Intercept")
+        str2 <- paste(format(round(summary(line())$coefficients[1], 2)))
+        HTML(paste(str1, str2))
+    })
     
     output$contents <- renderTable({
         
