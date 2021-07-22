@@ -8,6 +8,7 @@
 #
 
 library(shiny)
+library(plotly)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -62,7 +63,7 @@ ui <- fluidPage(
         # Show a plot of the generated distribution
         mainPanel(
             plotOutput("distPlot"),
-            plotOutput("LMPlot"),
+            plotlyOutput("LMPlot"),
             # Output: Data file ----
             tableOutput("contents")
         )
@@ -90,9 +91,9 @@ line <- eventReactive(input$go, {lm(dataInput()$y ~ dataInput()$x)})
     })
     
     #add linear model graph
-    output$LMPlot <- renderPlot({
-        plot(dataInput()$x, dataInput()$y)
-        abline(line())
+    output$LMPlot <- renderPlotly({
+        plot_ly(dataInput(), x = ~x, y = ~y, type = "scatter", mode = "markers")%>%
+            add_trace(dataInput(), x = ~x, y = fitted(line()), mode = "lines", showlegend = F)
     })
     
     #Output LM values
